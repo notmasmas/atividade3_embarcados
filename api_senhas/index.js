@@ -11,7 +11,7 @@ var db = new sqlite3.Database('./dados.db', (err) => {
     console.log("BD de senhas conectado!");
 })
 
-db.run("CREATE TABLE IF NOT EXISTS senhas (id INTEGER PRIMARY KEY AUTOINCREMENT, valor_senha INTEGER NOT NULL, id_pessoa INTEGER NOT NULL, id_fechadura INTEGER NOT NULL, inicio_validade DATETIME NOT NULL , fim_validade DATETIME NOT NULL", [], (err) => {
+db.run("CREATE TABLE IF NOT EXISTS senhas (id INTEGER PRIMARY KEY AUTOINCREMENT, valor_senha INTEGER NOT NULL, id_pessoa INTEGER NOT NULL, id_fechadura INTEGER NOT NULL, inicio_validade DATETIME NOT NULL , fim_validade DATETIME NOT NULL)", [], (err) => {
     if (err) {
         console.log("ERRO criar table BD senhas");
         throw err;
@@ -44,4 +44,8 @@ app.post('/senhas', async (req, res) => {
         }
     })
 });
+
+app.listen(8082, () => {
+    console.log("Serviço de senhas is up!!");  
+})
 

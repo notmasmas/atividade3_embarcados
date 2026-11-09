@@ -24,7 +24,7 @@ app.use(express.json());
 // Por se tratar do aplicativo, é mais plausível ter o ID/número dos quartos de fácil acesso do que o ID da fechadura
 app.post('/senhas', async (req, res) => {
     
-    const apiData = await axios.get(`http://localhost:8081/quartos/${req.body?.idQuarto}`); // Se comunicando com o serviço de quartos pra pegar o ID da fechadura
+    const apiData = await axios.get(`http://localhost:8081/quartos/${req.body?.numeroQuarto}`); // Se comunicando com o serviço de quartos pra pegar o ID da fechadura
     
     if (apiData.data?.id_fechadura == null) {
         res.status(400).send('Está fechadura não existe');
@@ -50,6 +50,24 @@ app.post('/senhas', async (req, res) => {
     })
 });
 
+app.delete('/senhas/:numeroQuarto', async (req, res) => {
+
+    const apiData = await axios.get(`http://localhost:8081/quartos/${req.body?.numeroQuarto}`); // Se comunicando com o serviço de quartos pra pegar o ID da fechadura
+
+    const idFechadura = apiData?.data.id_fechadura;
+    const idPessoa = req.body?.idPessoa;
+
+    db.all("DELETE FROM senhas WHERE id_fechadura = ? AND id_pessoa = ?", [idFechadura, idPessoa], (err, result) => {
+    if (err) {
+        res.status(500).send("ERRO deletando senha");
+        throw err;
+    } else if (result.length == 0) {
+        res.status(401).send("Nenhuma senha desta pessoa cadastrada para esta fechadura!");
+    } else {
+        res.status(200).send("Senha(s) deletada(s)");
+    }
+    })
+})
 
 // Esse endpoint aqui é utilizado quando alguém quer entrar em um quarto. A fechadura manda o seu próprio ID com a senha que a pessoa escreveu
 // Uma decisão que a gente fez é de receber o ID da fechadura em vez do quarto, já que a senha é inserida na própria fechadura, que deve saber seu ID

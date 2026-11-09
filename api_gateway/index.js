@@ -27,7 +27,8 @@ app.post('/login', async (req, res, next) => {
 
 app.use('/pessoas', authMiddleware); // Só o admin cadastra pessoas
 app.use('/quartos', authMiddleware); // Só o admin cadastra quartos
-app.post('/senhas', authMiddleware); // Só o admin cadastra senhas (a rota de buscar senha não é bloqueada)
+app.post('/senhas', authMiddleware); // Só o admin cadastra senhas (a rota de verificar senha não é bloqueada)
+app.delete('/senhas/:numeroQuarto', authMiddleware) // Só o admin deleta senhas
 
 function selectProxyHost(req) {
     if (req.path.startsWith('/pessoas'))

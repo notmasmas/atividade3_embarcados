@@ -19,7 +19,7 @@ db.run("CREATE TABLE IF NOT EXISTS pessoas (id INTEGER PRIMARY KEY AUTOINCREMENT
 
 app.use(express.json());
 
-app.get('/pessoas', (req, res) => {
+app.get('/pessoas', async (req, res) => {
     db.all("SELECT * FROM pessoas", [], (err, result) => {
         if (err) {
             res.status(500).send("ERRO procurando todas as pessoas");
@@ -32,7 +32,7 @@ app.get('/pessoas', (req, res) => {
     })
 })
 
-app.get('/pessoas/:id', (req, res) => {
+app.get('/pessoas/:id', async (req, res) => {
 
     db.get("SELECT * FROM pessoas WHERE id=?", req.params.id, (err, result) => {
         if (err) {
@@ -46,7 +46,7 @@ app.get('/pessoas/:id', (req, res) => {
     })
 })
 
-app.post('/pessoas', (req, res) => {
+app.post('/pessoas', async (req, res) => {
     const {nome, email, cpf} = req.body;
 
     db.run("INSERT INTO pessoas(nome, email, cpf) VALUES (?, ?, ?)", [nome, email, cpf], (err) => {
@@ -59,7 +59,7 @@ app.post('/pessoas', (req, res) => {
     })
 })
 
-app.patch('/pessoas/:id', (req, res) => {
+app.patch('/pessoas/:id', async (req, res) => {
     const {nome, email} = req.body;
 
     db.run("UPDATE pessoas SET nome=COALESCE(?, nome), email=COALESCE(?, email) WHERE id=?", [nome, email, req.params.id], function(err) {
@@ -74,7 +74,7 @@ app.patch('/pessoas/:id', (req, res) => {
     })
 })
 
-app.delete('/pessoas/:id', (req, res) => {
+app.delete('/pessoas/:id', async (req, res) => {
     db.run("DELETE FROM pessoas WHERE id=?", req.params.id, function(err) {
         if (err) {
             res.status(500).send("ERRO deletando pessoa");

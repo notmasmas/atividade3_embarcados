@@ -87,6 +87,34 @@ app.delete('/quartos/:id', (req, res) => {
     })
 })
 
+app.get('/quartos/fechadura/:id_fechadura', (req, res) => {
+    db.all("SELECT * FROM quartos WHERE id_fechadura=?",
+        [req.params.id_fechadura],
+        (err, result) => {
+        if (err) {
+            res.status(500).send("ERRO procurando quarto pela fechadura");
+            throw err;
+        } else if (result == 0) {
+            res.status(404).send("Nenhum quarto associado a essa fechadura... vixe");
+        } else {
+            res.status(200).json(result);
+        }
+    })
+})
+
+app.get('/quartos/numero/:numero', (req, res) => {
+    db.get("SELECT * FROM quartos WHERE numero=?", [req.params.numero], (err, result) => {
+        if (err) {
+            res.status(500).send("Erro procurando quarto pelo número");
+            throw err;
+        } else if (result == null) {
+            res.status(404).send("Quarto não encontrado");
+        } else {
+            res.status(200).json(result);
+        }
+    })
+})
+
 app.listen(8081, () => {
     console.log("Serviço de quarto is up!!");  
 })

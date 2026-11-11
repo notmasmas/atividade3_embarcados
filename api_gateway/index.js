@@ -16,7 +16,7 @@ app.post('/login', async (req, res, next) => {
         const accessToken = jwt.sign(
             { sub: 'Usuário admin' },
             '12345', // JWT SECRET
-            { expiresIn: '1h' }
+            { expiresIn: '2d' }
         );
 
         res.json({ accessToken, tokenType: 'Bearer' });
@@ -29,6 +29,7 @@ app.use('/pessoas', authMiddleware); // Só o admin cadastra pessoas
 app.use('/quartos', authMiddleware); // Só o admin cadastra quartos
 app.post('/senhas', authMiddleware); // Só o admin cadastra senhas (a rota de verificar senha não é bloqueada)
 app.delete('/senhas/:numeroQuarto', authMiddleware) // Só o admin deleta senhas
+app.get('/acessos', authMiddleware); // só o admin visualiza histórico de acessos
 
 function selectProxyHost(req) {
     if (req.path.startsWith('/pessoas'))

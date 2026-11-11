@@ -23,24 +23,45 @@ app.use(express.json());
 // Esse endpoint é utilizado para cadastrar senhas no aplicativo
 // Por se tratar do aplicativo, é mais plausível ter o ID/número dos quartos de fácil acesso do que o ID da fechadura
 app.post('/senhas', async (req, res) => {
-    
-    const apiData = await axios.get(`http://localhost:8081/quartos/${req.body?.numeroQuarto}`); // Se comunicando com o serviço de quartos pra pegar o ID da fechadura
-    
-    if (apiData.data?.id_fechadura == null) {
-        res.status(400).send('Está fechadura não existe');
+    const idPessoa = req.body?.idPessoa;
+    if (idPessoa == null) {
+        return res.status(400).send('ID da pessoa é obrigatório');
     }
 
-    const idFechadura = apiData.data?.id_fechadura;
+    let quarto;
+    try {
+        const apiData = await axios.get(`http://localhost:8081/quartos/numero/${req.body?.numeroQuarto}`);
+        quarto = apiData.data;
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+            return res.status(400).send('Quarto não encontrado');
+        }
+        return res.status(502).send('Erro consultando serviço de quartos');
+    }
+
+    if (quarto?.id_fechadura == null) {
+        return res.status(400).send('Quarto não encontrado');
+    }
+
+    try {
+        await axios.get(`http://localhost:8080/pessoas/${idPessoa}`);
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+            return res.status(400).send('Pessoa não encontrada');
+        }
+        return res.status(502).send('Erro consultando serviço de pessoas');
+    }
+
+    const idFechadura = quarto.id_fechadura;
     const valorSenha = req.body?.valorSenha;
-    const idPessoa = req.body?.idPessoa;
     const inicioValidade = req.body?.inicioValidade;
     const fimValidade = req.body?.fimValidade;
 
     if (inicioValidade > fimValidade) {
-        res.status(400).send('Fim da validade não pode ser antes que o começo dela');
+        return res.status(400).send('Fim da validade não pode ser antes que o começo dela');
     }
 
-        db.run("INSERT INTO senhas(valor_senha, id_pessoa, id_fechadura, inicio_validade, fim_validade) VALUES (?, ?, ?, ?, ?)", [valorSenha, idPessoa, idFechadura, inicioValidade, fimValidade], (err) => {
+    db.run("INSERT INTO senhas(valor_senha, id_pessoa, id_fechadura, inicio_validade, fim_validade) VALUES (?, ?, ?, ?, ?)", [valorSenha, idPessoa, idFechadura, inicioValidade, fimValidade], (err) => {
         if (err) {
             res.status(500).send("ERRO inserindo senha")
             throw err;
@@ -52,7 +73,7 @@ app.post('/senhas', async (req, res) => {
 
 app.delete('/senhas/:numeroQuarto', async (req, res) => {
 
-    const apiData = await axios.get(`http://localhost:8081/quartos/${req.body?.numeroQuarto}`); // Se comunicando com o serviço de quartos pra pegar o ID da fechadura
+    const apiData = await axios.get(`http://localhost:8081/quartos/numero/${req.params.numeroQuarto}`); // Se comunicando com o serviço de quartos pra pegar o ID da fechadura
 
     const idFechadura = apiData?.data.id_fechadura;
     const idPessoa = req.body?.idPessoa;
@@ -75,14 +96,13 @@ app.post('/senhas/:idFechadura', async (req, res) => {
 
     const idFechadura = req.params.idFechadura;
     const valorSenha = req.body?.valorSenha;
-    const hoje = 
 
     db.all("SELECT id FROM senhas WHERE valor_senha = ? AND id_fechadura = ? AND datetime(inicio_validade) <= datetime('now') AND datetime(fim_validade) >= datetime('now')", [valorSenha, idFechadura], (err, result) => {
     if (err) {
         res.status(500).send("ERRO procurando senha");
         throw err;
     } else if (result.length == 0) {
-        res.status(401).send("Senha não autorizada ou expirada");
+        res.status(403).send("Senha não autorizada ou expirada");
     } else {
         res.status(200).send("Senha autorizada");
     }
@@ -93,10 +113,10 @@ app.get('/senhas/', async (req, res) => {
     db.all("SELECT * FROM senhas", [], (err, result) => {
 
         if (err) {
-            res.status(500).send("ERRO procurando todas as pessoas");
+            res.status(500).send("ERRO procurando senhas");
             throw err;
         } else if (result == 0) {
-            res.status(404).send("Não tem pessoas mano");
+            res.status(404).send("Sem senhas cadastradas!");
         } else {
             res.status(200).json(result);
         }
@@ -106,4 +126,3 @@ app.get('/senhas/', async (req, res) => {
 app.listen(8082, () => {
     console.log("Serviço de senhas is up!!");  
 })
-

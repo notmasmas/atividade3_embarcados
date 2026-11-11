@@ -18,7 +18,6 @@ db.run(`CREATE TABLE IF NOT EXISTS acessos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_fechadura INTEGER NOT NULL,
     numero INTEGER NOT NULL,
-    andar INTEGER NOT NULL,
     data_hora TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
     status TEXT NOT NULL CHECK (status IN ('PERMITIDO', 'NEGADO'))
 )`, [], (err) => {
@@ -78,7 +77,7 @@ app.post('/acessos', async (req, res) => {
         await axios.post(`${URL_SENHAS}/senhas/${quarto.id_fechadura}`, { valorSenha: senha });
         permitida = true;
     } catch (err) {
-        if (err.response && err.response.status === 401) {
+        if (err.response && err.response.status === 403) {
             permitida = false;
         } else {
             return res.status(502).send("Serviço de senhas indisponível");

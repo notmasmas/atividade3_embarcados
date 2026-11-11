@@ -78,12 +78,11 @@ app.delete('/senhas/:numeroQuarto', async (req, res) => {
     const idFechadura = apiData?.data.id_fechadura;
     const idPessoa = req.body?.idPessoa;
 
-    db.all("DELETE FROM senhas WHERE id_fechadura = ? AND id_pessoa = ?", [idFechadura, idPessoa], (err, result) => {
+    db.run("DELETE FROM senhas WHERE id_fechadura = ? AND id_pessoa = ?", [idFechadura, idPessoa], function(err) {
     if (err) {
         res.status(500).send("ERRO deletando senha");
-        throw err;
-    } else if (result.length == 0) {
-        res.status(401).send("Nenhuma senha desta pessoa cadastrada para esta fechadura!");
+    } else if (this.changes == 0) { // número de linhas que o delete apagou
+        res.status(404).send("Nenhuma senha desta pessoa cadastrada para esta fechadura!");
     } else {
         res.status(200).send("Senha(s) deletada(s)");
     }

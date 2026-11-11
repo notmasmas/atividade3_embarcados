@@ -22,9 +22,9 @@ app.use(express.json());
 app.get('/quartos', (req, res) => {
     db.all("SELECT * FROM quartos", [], (err, result) => {
         if (err) {
+            console.error(err);
             res.status(500).send("ERRO procurando todas os quartos");
-            throw err;
-        } else if (result == 0) {
+        } else if (result.length == 0) {
             res.status(404).send("Não tem quartos vey...");
         } else {
             res.status(200).json(result);
@@ -36,8 +36,8 @@ app.get('/quartos/:id', (req, res) => {
 
     db.get("SELECT * FROM quartos WHERE id=?", req.params.id, (err, result) => {
         if (err) {
+            console.error(err);
             res.status(500).send("ERRO procurando quarto");
-            throw err
         } else if (result == null) {
             res.status(404).send("Quarto não encontrado");
         } else {
@@ -51,8 +51,8 @@ app.post('/quartos', (req, res) => {
 
     db.run("INSERT INTO quartos(id_fechadura, numero, andar) VALUES (?, ?, ?)", [id_fechadura, numero, andar], (err) => {
         if (err) {
+            console.error(err);
             res.status(500).send("ERRO inserindo quarto")
-            throw err;
         } else {
             res.status(201).send("Quarto cadastrado")
         }
@@ -64,8 +64,8 @@ app.patch('/quartos/:id', (req, res) => {
 
     db.run("UPDATE quartos SET id_fechadura=COALESCE(?, id_fechadura), numero=COALESCE(?, numero), andar=COALESCE(?, andar) WHERE id=?", [id_fechadura, numero, andar, req.params.id], function(err) {
         if (err) {
+            console.error(err);
             res.status(500).send("ERRO atualizando quarto");
-            throw err;
         } else if (this.changes == 0) {
             res.status(404).send("Quarto não foi encontrado");
         } else {
@@ -77,8 +77,8 @@ app.patch('/quartos/:id', (req, res) => {
 app.delete('/quartos/:id', (req, res) => {
     db.run("DELETE FROM quartos WHERE id=?", req.params.id, function(err) {
         if (err) {
+            console.error(err);
             res.status(500).send("ERRO deletando quarto");
-            throw err;
         } else if (this.changes == 0) {
             res.status(404).send("Quarto não foi encontrado");
         } else {
@@ -92,9 +92,9 @@ app.get('/quartos/fechadura/:id_fechadura', (req, res) => {
         [req.params.id_fechadura],
         (err, result) => {
         if (err) {
+            console.error(err);
             res.status(500).send("ERRO procurando quarto pela fechadura");
-            throw err;
-        } else if (result == 0) {
+        } else if (result.length == 0) {
             res.status(404).send("Nenhum quarto associado a essa fechadura... vixe");
         } else {
             res.status(200).json(result);
@@ -105,8 +105,8 @@ app.get('/quartos/fechadura/:id_fechadura', (req, res) => {
 app.get('/quartos/numero/:numero', (req, res) => {
     db.get("SELECT * FROM quartos WHERE numero=?", [req.params.numero], (err, result) => {
         if (err) {
+            console.error(err);
             res.status(500).send("Erro procurando quarto pelo número");
-            throw err;
         } else if (result == null) {
             res.status(404).send("Quarto não encontrado");
         } else {
